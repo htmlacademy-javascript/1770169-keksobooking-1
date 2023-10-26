@@ -1,3 +1,8 @@
+const ArrayLength = {
+  MIN: 1,
+  MAX: 5
+};
+
 const generateRandomNumber = (min, max) => {
   const minNumber = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const maxNumber = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
@@ -20,4 +25,15 @@ const generateRandomFloatNumber = (min, max, decimals) => {
 
 const getRandomElement = (elements) => elements[generateRandomNumber(0, elements.length - 1)];
 
-export {generateRandomNumber, generateRandomFloatNumber, getRandomElement};
+const generateRandomElements = (elements) => {
+  const randomElements = Array.from(
+    {
+      length: generateRandomNumber(ArrayLength.MIN, ArrayLength.MAX)
+    },
+    () => getRandomElement(elements)
+  );
+
+  return new Set(randomElements);
+};
+
+export {generateRandomNumber, generateRandomFloatNumber, getRandomElement, generateRandomElements};
