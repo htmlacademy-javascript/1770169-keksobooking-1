@@ -80,3 +80,4 @@ const createAd = () => ({
   }
 });
 
+export const generateAds = () => Array.from({length: AD_LENGTH}, createAd);

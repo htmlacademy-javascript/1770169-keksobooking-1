@@ -36,6 +36,6 @@ const generateRandomElements = (elements) => {
   return new Set(randomElements);
 };
 
-const addZeroPad = (number) => number.toString().padStart(2, '0');
+const addZeroPad = (number) => parseInt(number.toString().padStart(2, '0'), 10);
 
 export {generateRandomNumber, generateRandomFloatNumber, getRandomElement, generateRandomElements, addZeroPad};
