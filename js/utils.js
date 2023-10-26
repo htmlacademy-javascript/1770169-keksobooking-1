@@ -6,4 +6,16 @@ const generateRandomNumber = (min, max) => {
   return Math.floor(randomNumber);
 };
 
-export {generateRandomNumber};
+const generateRandomFloatNumber = (min, max, decimals) => {
+  const isNumber = typeof min === 'number' && typeof max === 'number';
+  const isPositiveNumber = min >= 0 || max >= 0;
+
+  if (!isNumber || !isPositiveNumber || min >= max) {
+    return NaN;
+  }
+  const randomNumber = (Math.random() * (max - min) + min).toFixed(decimals);
+
+  return parseFloat(randomNumber);
+};
+
+export {generateRandomNumber, generateRandomFloatNumber};
