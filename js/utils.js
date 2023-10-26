@@ -18,4 +18,6 @@ const generateRandomFloatNumber = (min, max, decimals) => {
   return parseFloat(randomNumber);
 };
 
-export {generateRandomNumber, generateRandomFloatNumber};
+const getRandomElement = (elements) => elements[generateRandomNumber(0, elements.length - 1)];
+
+export {generateRandomNumber, generateRandomFloatNumber, getRandomElement};
