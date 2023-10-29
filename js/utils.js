@@ -1,8 +1,3 @@
-const ArrayLength = {
-  MIN: 1,
-  MAX: 5
-};
-
 const generateRandomNumber = (min, max) => {
   const minNumber = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const maxNumber = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
@@ -28,7 +23,7 @@ const getRandomElement = (elements) => elements[generateRandomNumber(0, elements
 const generateRandomElements = (elements) => {
   const randomElements = Array.from(
     {
-      length: generateRandomNumber(ArrayLength.MIN, ArrayLength.MAX)
+      length: generateRandomNumber(1, elements.length)
     },
     () => getRandomElement(elements)
   );
@@ -36,6 +31,6 @@ const generateRandomElements = (elements) => {
   return new Set(randomElements);
 };
 
-const addZeroPad = (number) => parseInt(number.toString().padStart(2, '0'), 10);
+const addZeroPad = (number) => number.toString().padStart(2, '0');
 
 export {generateRandomNumber, generateRandomFloatNumber, getRandomElement, generateRandomElements, addZeroPad};
