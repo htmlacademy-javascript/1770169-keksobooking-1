@@ -6,7 +6,7 @@ import {
   getRandomElement
 } from './utils.js';
 
-const AD_LENGTH = 10;
+const AD_COUNT = 10;
 const Price = {
   MIN: 1000,
   MAX: 10000
@@ -80,4 +80,4 @@ const createAd = () => ({
   }
 });
 
-export const generateAds = () => Array.from({length: AD_LENGTH}, createAd);
+export const generateAds = () => Array.from({length: AD_COUNT}, createAd);
