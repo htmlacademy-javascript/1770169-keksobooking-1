@@ -77,9 +77,7 @@ const renderOffer = ({offer, author}) => {
 };
 
 const initOffers = (offers) => {
-  for (const offer of offers) {
-    mapElement.append(renderOffer(offer));
-  }
+  mapElement.append(renderOffer(offers[0]));
 };
 
 export {initOffers};
