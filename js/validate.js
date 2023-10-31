@@ -12,16 +12,10 @@ const MIN_HOUSING_PRICE = {
   palace: 10000,
   hotel: 3000
 };
-const MAX_GUEST = {
-  0: '100',
-  1: '1',
-  2: '2',
-  3: '3',
-};
 
 const titleElement = formElement.querySelector('#title');
 const priceElement = formElement.querySelector('#price');
-const guestsElement = formElement.querySelector('#capacity');
+const roomElement = formElement.querySelector('#room_number');
 
 const pristine = new Pristine(formElement, {
   classTo: 'notice',
@@ -50,25 +44,42 @@ function getPriceErrorMessage () {
   return `Стоимость не может быть меньше ${MIN_HOUSING_PRICE[getSelectedValue()]} и больше ${MAX_PRICE_COUNT} рублей!`;
 }
 
-const guestsValidate = (value) => {
-  const roomElement = formElement.querySelector('#room_number');
-  const selectedValue = roomElement.selectedOptions[0].value;
-  console.log('guest: ', MAX_GUEST[value]);
-  console.log('rooms: ', selectedValue);
-  /* if ('1 room' === '1 guest') {
-    return 'Одна комната для одного гостя';
-  } else if ('2 room' === '2 guest' || '2 room' === '1 guest') {
-    return 'Две комната для одного или двух гостей';
-  } else if ('3 room' === '3 guest' || '3 room' === '2 guest'|| '3 room' === '1 guest') {
-    return 'Три комнаты для одного, двух или трех гостей';
-  } else if ('100 room' === '0 guest') {
-    return 'Не для гостей';
-  } */
+const getGuestValue = () => {
+  const guestsElement = formElement.querySelector('#capacity');
+  return guestsElement.selectedOptions[0].value;
+};
+
+const hundredRoomValidate = (value) => {
+  if (value === '100') {
+    return getGuestValue() === '0';
+  }
+  return true;
+};
+const oneRoomValidate = (value) => {
+  if (value === '1') {
+    return getGuestValue() === '1';
+  }
+  return true;
+};
+const twoRoomValidate = (value) => {
+  if (value === '2') {
+    return getGuestValue() === '1' || getGuestValue() === '2';
+  }
+  return true;
+};
+const threeRoomValidate = (value) => {
+  if (value === '3') {
+    return getGuestValue() === '1' || getGuestValue() === '2' || getGuestValue() === '3';
+  }
+  return true;
 };
 
 pristine.addValidator(titleElement, titleValidate, `Длина заголовка не может быть меньше ${TitleLength.MIN} и больше ${TitleLength.MAX} символов!`);
 pristine.addValidator(priceElement, priceValidate, getPriceErrorMessage);
-pristine.addValidator(guestsElement, guestsValidate, getPriceErrorMessage);
+pristine.addValidator(roomElement, hundredRoomValidate, 'Не для гостей');
+pristine.addValidator(roomElement, oneRoomValidate, 'Одна комната для одного гостя');
+pristine.addValidator(roomElement, twoRoomValidate, 'Две комнаты для одного или двух гостей');
+pristine.addValidator(roomElement, threeRoomValidate, 'Три комнаты для одного, двух или трех гостей');
 
 const checkFormValidity = () => pristine.validate();
 const resetPristine = () => pristine.reset();
