@@ -37,6 +37,8 @@ const allowElement = (element) => (element.disabled = false);
 
 const disableElement = (element) => (element.disabled = true);
 
+const getSelectedValue = (selectElement) => selectElement.selectedOptions[0].value;
+
 export {
   generateRandomNumber,
   generateRandomFloatNumber,
@@ -44,5 +46,6 @@ export {
   generateRandomElements,
   addZeroPad,
   allowElement,
-  disableElement
+  disableElement,
+  getSelectedValue
 };

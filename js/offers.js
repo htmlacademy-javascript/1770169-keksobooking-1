@@ -6,7 +6,6 @@ const OFFER_TYPE = {
   hotel: 'Отель'
 };
 
-const mapElement = document.querySelector('.map__canvas');
 const popupTemplate = document.querySelector('#card').content.querySelector('.popup');
 const photoTemplate = document.querySelector('#photo').content.querySelector('.popup__photo');
 const featureTemplate = document.querySelector('#feature').content.querySelector('.popup__feature');
@@ -77,7 +76,7 @@ const renderOffer = ({offer, author}) => {
 };
 
 const initOffers = (offers) => {
-  mapElement.append(renderOffer(offers[0]));
+  renderOffer(offers[0]);
 };
 
 export {initOffers};
