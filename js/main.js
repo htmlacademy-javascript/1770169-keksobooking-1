@@ -1,4 +1,6 @@
 import {generateAds} from './mocks.js';
-import {initOffers} from './offers.js';
+import {initMap} from './map.js';
+import {setActiveFilters} from './filters.js';
 
-initOffers(generateAds());
+initMap(generateAds());
+setActiveFilters();

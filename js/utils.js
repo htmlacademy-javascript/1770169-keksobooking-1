@@ -33,4 +33,19 @@ const generateRandomElements = (elements) => {
 
 const addZeroPad = (number) => number.toString().padStart(2, '0');
 
-export {generateRandomNumber, generateRandomFloatNumber, getRandomElement, generateRandomElements, addZeroPad};
+const allowElement = (element) => (element.disabled = false);
+
+const disableElement = (element) => (element.disabled = true);
+
+const getSelectedValue = (selectElement) => selectElement.selectedOptions[0].value;
+
+export {
+  generateRandomNumber,
+  generateRandomFloatNumber,
+  getRandomElement,
+  generateRandomElements,
+  addZeroPad,
+  allowElement,
+  disableElement,
+  getSelectedValue
+};

@@ -6,23 +6,9 @@ const OFFER_TYPE = {
   hotel: 'Отель'
 };
 
-const mapElement = document.querySelector('.map__canvas');
 const popupTemplate = document.querySelector('#card').content.querySelector('.popup');
 const photoTemplate = document.querySelector('#photo').content.querySelector('.popup__photo');
 const featureTemplate = document.querySelector('#feature').content.querySelector('.popup__feature');
-
-const renderElement = (isEmpty, container, className, text) => {
-  if (!isEmpty) {
-    return container.querySelector(className).remove();
-  }
-
-  if (className === '.popup__avatar') {
-    container.querySelector(className).src = text;
-    return;
-  }
-
-  container.querySelector(className).textContent = text;
-};
 
 const renderFeature = (type) => {
   const featureElement = featureTemplate.cloneNode(true);
@@ -36,6 +22,13 @@ const renderPhoto = (path) => {
   photoElement.src = path;
 
   return photoElement;
+};
+
+const renderElements = (values, container, cb) => {
+  if (!values) {
+    return container.remove();
+  }
+  values.forEach((value) => container.append(cb(value)));
 };
 
 const renderOffer = ({offer, author}) => {
@@ -56,30 +49,61 @@ const renderOffer = ({offer, author}) => {
   const featuresElement = popupElement.querySelector('.popup__features');
   const photosElement = popupElement.querySelector('.popup__photos');
 
-  renderElement(!!title, popupElement, '.popup__title', title);
-  renderElement(!!address, popupElement, '.popup__text--address', address);
-  renderElement(!!price, popupElement, '.popup__text--price', `${price} ₽/ночь`);
-  renderElement(!!type, popupElement, '.popup__type', OFFER_TYPE[type]);
-  renderElement(!!rooms && !!guests, popupElement, '.popup__text--capacity', `${rooms} комнаты для ${guests} гостей`);
-  renderElement(!!checkin && !!checkout, popupElement, '.popup__text--time', `${checkin}, выезд до ${checkout}`);
-  renderElement(!!description, popupElement, '.popup__description', description);
-  renderElement(!!author.avatar, popupElement, '.popup__avatar', author.avatar);
+  const addValue = (value, className) => {
+    if (!value) {
+      return popupElement.querySelector(className).remove();
+    }
+    popupElement.querySelector(className).textContent = value;
+  };
 
-  if (features) {
-    features.forEach((feature) => featuresElement.append(renderFeature(feature)));
-  }
+  const addAvatar = () => {
+    if (!author.avatar) {
+      return popupElement.querySelector('.popup__avatar').remove();
+    }
+    popupElement.querySelector('.popup__avatar').src = author.avatar;
+  };
 
-  if (photos) {
-    photos.forEach((photo) => photosElement.append(renderPhoto(photo)));
-  }
+  const addPrice = () => {
+    if (!price) {
+      return popupElement.querySelector('.popup__text--price').remove();
+    }
+    popupElement.querySelector('.popup__text--price').textContent = `${price} ₽/ночь`;
+  };
+
+  const addType = () => {
+    if (!type) {
+      return popupElement.querySelector('.popup__type').remove();
+    }
+    popupElement.querySelector('.popup__type').textContent = OFFER_TYPE[type];
+  };
+
+  const addCapacity = () => {
+    if (!rooms && !guests) {
+      return popupElement.querySelector('.popup__text--capacity').remove();
+    }
+    popupElement.querySelector('.popup__text--capacity').textContent = `${rooms} комнаты для ${guests} гостей`;
+  };
+
+  const addTime = () => {
+    if (!checkin && !checkout) {
+      return popupElement.querySelector('.popup__text--time').remove();
+    }
+    popupElement.querySelector('.popup__text--time').textContent = `Заезд после ${checkin}, выезд до ${checkout}`;
+  };
+
+
+  addValue(title, '.popup__title');
+  addValue(address, '.popup__text--address');
+  addPrice();
+  addType();
+  addCapacity();
+  addTime();
+  addValue(description, '.popup__description');
+  addAvatar();
+  renderElements(features, featuresElement, renderFeature);
+  renderElements(photos, photosElement, renderPhoto) ;
 
   return popupElement;
 };
 
-const initOffers = (offers) => {
-  for (const offer of offers) {
-    mapElement.append(renderOffer(offer));
-  }
-};
-
-export {initOffers};
+export {renderOffer};
