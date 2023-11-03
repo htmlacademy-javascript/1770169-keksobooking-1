@@ -5,7 +5,7 @@ const filterElements = filtersElement.querySelectorAll('.map__filter');
 const featuresElement = filtersElement.querySelector('.map__features');
 
 const setActiveFilters = () => {
-  filtersElement.classList.add('map__filters--disabled');
+  filtersElement.classList.remove('map__filters--disabled');
   filterElements.forEach((element) => allowElement(element));
   allowElement(featuresElement);
 };
@@ -18,3 +18,5 @@ const setInactiveFilters = () => {
 };
 
 setInactiveFilters();
+
+export {setActiveFilters, setInactiveFilters};
