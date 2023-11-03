@@ -47,13 +47,13 @@ const Avatar = {
   MAX: 10
 };
 const Longitude = {
-  MIN: 35.65000,
-  MAX: 35.70000,
+  MIN: 139.70000,
+  MAX: 139.80000,
   DECIMALS: 5
 };
 const Latitude = {
-  MIN: 139.70000,
-  MAX: 139.80000,
+  MIN: 35.65000,
+  MAX: 35.70000,
   DECIMALS: 5
 };
 

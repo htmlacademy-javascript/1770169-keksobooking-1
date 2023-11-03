@@ -1048,30 +1048,3 @@ fieldset {
 .hidden {
   display: none;
 }
-
-.text--error {
-  position: relative;
-}
-
-.text--error .text__error-message {
-  color: #800000;
-  border-color: #622104;
-}
-
-
-.text--success .text__error-message{
-  color: #228b22;
-  border-color: #006400;
-}
-
-.text__error-message {
-  position: absolute;
-  left: 50%;
-  top: 1%;
-  width: 100%;
-  padding: 2px 5px;
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
-  transform: translateX(-50%);
-}

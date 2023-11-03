@@ -5,13 +5,14 @@ const TitleLength = {
   MIN: 30,
   MAX: 100
 };
-const MAX_PRICE_COUNT = 100000;
-const MIN_HOUSING_PRICE = {
+
+const Price = {
   flat: 1000,
   bungalow: 0,
   house: 5000,
   palace: 10000,
-  hotel: 3000
+  hotel: 3000,
+  max: 100000
 };
 const Room = {
   ONE: '1',
@@ -30,14 +31,7 @@ const titleElement = formElement.querySelector('#title');
 const roomElement = formElement.querySelector('#room_number');
 const guestElement = formElement.querySelector('#capacity');
 
-const pristine = new Pristine(formElement, {
-  classTo: 'notice',
-  errorClass: 'text--error',
-  successClass: 'text--success',
-  errorTextParent: 'notice',
-  errorTextTag: 'div',
-  errorTextClass: 'text__error-message'
-});
+const pristine = new Pristine(formElement);
 
 const titleValidate = (value) => value.length >= TitleLength.MIN && value.length <= TitleLength.MAX;
 
@@ -46,62 +40,69 @@ const getTitleErrorMessage = () => `Длина заголовка не може�
 const priceValidate = (value) => {
   const price = parseInt(value, 10);
 
-  return price >= MIN_HOUSING_PRICE[getSelectedValue(houseElement)] && price <= MAX_PRICE_COUNT;
+  return price >= Price[getSelectedValue(houseElement)] && price <= Price.max;
 };
 
-const getPriceErrorMessage = () => `Стоимость не может быть меньше ${MIN_HOUSING_PRICE[getSelectedValue()]} и больше ${MAX_PRICE_COUNT} рублей!`;
+const getPriceErrorMessage = () => `Стоимость не может быть меньше ${Price[getSelectedValue(houseElement)]} и больше ${Price.max} рублей!`;
 
 const roomValidate = (value) => {
+  const selectedValue = getSelectedValue(guestElement);
+
   switch (value) {
     case Room.ONE:
-      return getSelectedValue(guestElement) === Guest.ONE;
+      return selectedValue === Guest.ONE;
     case Room.TWO:
-      return getSelectedValue(guestElement) === Guest.ONE ||
-        getSelectedValue(guestElement) === Guest.TWO;
+      return selectedValue === Guest.ONE ||
+      selectedValue === Guest.TWO;
     case Room.THREE:
-      return getSelectedValue(guestElement) === Guest.ONE ||
-        getSelectedValue(guestElement) === Guest.TWO ||
-        getSelectedValue(guestElement) === Guest.THREE;
+      return selectedValue === Guest.ONE ||
+      selectedValue === Guest.TWO ||
+      selectedValue === Guest.THREE;
     case Room.ONE_HUNDRED:
-      return getSelectedValue(guestElement) === Guest.ZERO;
+      return selectedValue === Guest.ZERO;
     default:
       return true;
   }
 };
 
 const guestValidate = (value) => {
+  const selectedValue = getSelectedValue(roomElement);
+
   switch (value) {
     case Guest.ONE:
-      return getSelectedValue(roomElement) === Room.ONE ||
-        getSelectedValue(roomElement) === Room.TWO ||
-        getSelectedValue(roomElement) === Room.THREE;
+      return selectedValue === Room.ONE ||
+      selectedValue === Room.TWO ||
+      selectedValue === Room.THREE;
     case Guest.TWO:
-      return getSelectedValue(roomElement) === Room.TWO ||
-        getSelectedValue(roomElement) === Room.THREE;
+      return selectedValue === Room.TWO ||
+      selectedValue === Room.THREE;
     case Guest.THREE:
-      return getSelectedValue(roomElement) === Room.THREE;
+      return selectedValue === Room.THREE;
     case Guest.ZERO:
-      return getSelectedValue(roomElement) === Room.ONE_HUNDRED;
+      return selectedValue === Room.ONE_HUNDRED;
     default:
       return true;
   }
 };
 
 const getErrorMessage = () => {
-  const roomUnit = getSelectedValue(roomElement) === Room.ONE ? 'комната' : 'комнаты';
-  const guestUnit = getSelectedValue(guestElement) === Guest.ONE ? 'гостя' : 'гостей';
-  return getSelectedValue(roomElement) === Room.ONE_HUNDRED || getSelectedValue(guestElement) === Guest.ZERO ?
+  const roomValue = getSelectedValue(roomElement);
+  const guestValue = getSelectedValue(guestElement);
+  const roomUnit = roomValue === Room.ONE ? 'комната' : 'комнаты';
+  const guestUnit = guestValue === Guest.ONE ? 'гостя' : 'гостей';
+
+  return roomValue === Room.ONE_HUNDRED || guestValue === Guest.ZERO ?
     'Не для гостей' :
-    `${getSelectedValue(roomElement)} ${roomUnit} не для ${getSelectedValue(guestElement)} ${guestUnit}`;
+    `${roomValue} ${roomUnit} не для ${guestValue} ${guestUnit}`;
 };
 
 pristine.addValidator(titleElement, titleValidate, getTitleErrorMessage);
 pristine.addValidator(priceElement, priceValidate, getPriceErrorMessage);
-
 pristine.addValidator(roomElement, roomValidate, getErrorMessage);
 pristine.addValidator(guestElement, guestValidate, getErrorMessage);
 
 const checkFormValidity = () => pristine.validate();
 const resetPristine = () => pristine.reset();
+const getErrors = () => pristine.getErrors();
 
-export {checkFormValidity, resetPristine};
+export {checkFormValidity, resetPristine, getErrors};
