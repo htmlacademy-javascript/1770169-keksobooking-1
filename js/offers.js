@@ -1,3 +1,5 @@
+import {debounce} from './utils.js';
+
 const OFFER_TYPE = {
   flat: 'Квартира',
   bungalow: 'Бунгало',
@@ -106,4 +108,6 @@ const renderOffer = ({offer, author}) => {
   return popupElement;
 };
 
-export {renderOffer};
+const debouncedRenderOffers = debounce(renderOffer);
+
+export {renderOffer, debouncedRenderOffers};
