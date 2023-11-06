@@ -1,3 +1,5 @@
+const DELAY = 500;
+
 const generateRandomNumber = (min, max) => {
   const minNumber = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const maxNumber = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
@@ -33,11 +35,20 @@ const generateRandomElements = (elements) => {
 
 const addZeroPad = (number) => number.toString().padStart(2, '0');
 
-const allowElement = (element) => (element.disabled = false);
-
-const disableElement = (element) => (element.disabled = true);
+const setElementDisabled = (element, isDisabled) => (element.disabled = isDisabled);
 
 const getSelectedValue = (selectElement) => selectElement.selectedOptions[0].value;
+
+const isEscapeKey = (evt) => evt.key === 'Escape';
+
+const debounce = (callback, timeoutDelay = DELAY) => {
+  let timeoutId;
+
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback(...args), timeoutDelay);
+  };
+};
 
 export {
   generateRandomNumber,
@@ -45,7 +56,8 @@ export {
   getRandomElement,
   generateRandomElements,
   addZeroPad,
-  allowElement,
-  disableElement,
-  getSelectedValue
+  setElementDisabled,
+  getSelectedValue,
+  isEscapeKey,
+  debounce
 };

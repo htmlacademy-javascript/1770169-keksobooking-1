@@ -1,5 +1,8 @@
+import {sendData} from './api.js';
 import {formElement, houseElement, priceElement} from './elements.js';
-import {allowElement, disableElement, getSelectedValue} from './utils.js';
+import {resetMarkers} from './map.js';
+import {showErrorMessage, showSuccessMessage} from './message.js';
+import {setElementDisabled, getSelectedValue} from './utils.js';
 import {checkFormValidity, resetPristine, getErrors} from './validate.js';
 
 const Price = {
@@ -17,14 +20,15 @@ const headerElement = formElement.querySelector('.ad-form-header');
 const groupElements = formElement.querySelectorAll('.ad-form__element');
 const timeInElement = formElement.querySelector('#timein');
 const timeOutElement = formElement.querySelector('#timeout');
-const adressElement = formElement.querySelector('#address');
+const addressElement = formElement.querySelector('#address');
+const submitElement = formElement.querySelector('.ad-form__submit');
 
 noUiSlider.create(sliderElement, {
   range: {
     min: 0,
     max: 100000
   },
-  step: 1,
+  step: 100,
   start: 0,
   connect: 'lower',
   format: {
@@ -47,18 +51,18 @@ const changeTimeInHandler = (evt) => (timeOutElement.value = evt.target.value);
 
 const changeTimeOutHandler = (evt) => (timeInElement.value = evt.target.value);
 
-const moveendAdressHandler = (lat, lng) => (adressElement.value = `lat: ${(lat).toFixed(DECIMALS)}, lng: ${(lng).toFixed(DECIMALS)}`);
+const moveendAddressHandler = (lat, lng) => (addressElement.value = `${(lat).toFixed(DECIMALS)}, ${(lng).toFixed(DECIMALS)}`);
 
-const setActiveForm = () => {
+const setFormActive = () => {
   formElement.classList.remove('ad-form--disabled');
-  allowElement(headerElement);
-  groupElements.forEach((element) => allowElement(element));
+  setElementDisabled(headerElement, false);
+  groupElements.forEach((element) => setElementDisabled(element, false));
 };
 
-const setInactiveForm = () => {
+const setFormInactive = () => {
   formElement.classList.add('ad-form--disabled');
-  disableElement(headerElement);
-  groupElements.forEach((element) => disableElement(element));
+  setElementDisabled(headerElement, true);
+  groupElements.forEach((element) => setElementDisabled(element, true));
 };
 
 const addErrors = (errors) => {
@@ -79,18 +83,38 @@ const removeErrors = () => {
   groupElements.forEach((element) => element.classList.remove('ad-form__element--invalid'));
 };
 
-const submitFormHandler = (evt) => {
+const submitFormHandler = async (evt) => {
   evt.preventDefault();
   removeErrors();
 
   if (!checkFormValidity()) {
     const errors = getErrors();
     addErrors(errors);
-    resetPristine();
+    return resetPristine();
+  }
+  const formData = new FormData(evt.target);
+
+  try {
+    setElementDisabled(submitElement, true);
+    await sendData(formData);
+    showSuccessMessage();
+    setElementDisabled(submitElement, false);
+    resetMarkers();
+    sliderElement.noUiSlider.reset();
+    formElement.reset();
+  } catch {
+    showErrorMessage();
+    setElementDisabled(submitElement, false);
   }
 };
 
-formElement.addEventListener('reset', () => formElement.reset());
+const resetFormHandler = () => {
+  formElement.reset();
+  resetMarkers();
+  sliderElement.noUiSlider.reset();
+};
+
+formElement.addEventListener('reset', resetFormHandler);
 formElement.addEventListener('submit', submitFormHandler);
 houseElement.addEventListener('change', changeHouseHandler);
 timeInElement.addEventListener('change', changeTimeInHandler);
@@ -99,6 +123,6 @@ priceElement.addEventListener('input', (evt) => {
   sliderElement.noUiSlider.set(evt.target.value);
 });
 
-setInactiveForm();
+setFormInactive();
 
-export {setActiveForm, setInactiveForm, moveendAdressHandler};
+export {setFormActive, setFormInactive, moveendAddressHandler};

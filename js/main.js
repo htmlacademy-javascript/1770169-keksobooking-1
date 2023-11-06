@@ -1,6 +1,12 @@
-import {generateAds} from './mocks.js';
-import {initMap} from './map.js';
-import {setActiveFilters} from './filters.js';
+import {addMarkers} from './map.js';
+import {initFilters} from './filters.js';
+import {getData} from './api.js';
+import {showAlert} from './message.js';
 
-initMap(generateAds());
-setActiveFilters();
+try {
+  const data = await getData();
+  addMarkers(data);
+  initFilters(data);
+} catch (error) {
+  showAlert(error);
+}

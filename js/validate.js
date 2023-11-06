@@ -26,6 +26,12 @@ const Guest = {
   TWO: '2',
   THREE: '3'
 };
+const roomsOption = {
+  '1': ['1'],
+  '2': ['2', '1'],
+  '3': ['3', '2', '1'],
+  '100': ['0'],
+};
 
 const titleElement = formElement.querySelector('#title');
 const roomElement = formElement.querySelector('#room_number');
@@ -35,7 +41,7 @@ const pristine = new Pristine(formElement);
 
 const titleValidate = (value) => value.length >= TitleLength.MIN && value.length <= TitleLength.MAX;
 
-const getTitleErrorMessage = () => `Длина заголовка не может быть меньше ${TitleLength.MIN} и больше ${TitleLength.MAX} символов!`;
+const getTitleErrorMessage = () => `Минимальная длина заголовка ${TitleLength.MIN}, а максимальная ${TitleLength.MAX}`;
 
 const priceValidate = (value) => {
   const price = parseInt(value, 10);
@@ -43,12 +49,12 @@ const priceValidate = (value) => {
   return price >= Price[getSelectedValue(houseElement)] && price <= Price.max;
 };
 
-const getPriceErrorMessage = () => `Стоимость не может быть меньше ${Price[getSelectedValue(houseElement)]} и больше ${Price.max} рублей!`;
+const getPriceErrorMessage = () => `Для выбранного типа жилья минимальная цена ${Price[getSelectedValue(houseElement)]}, а максимальная ${Price.max} рублей.`;
 
 const roomValidate = (value) => {
   const selectedValue = getSelectedValue(guestElement);
 
-  switch (value) {
+  /*switch (value) {
     case Room.ONE:
       return selectedValue === Guest.ONE;
     case Room.TWO:
@@ -62,13 +68,25 @@ const roomValidate = (value) => {
       return selectedValue === Guest.ZERO;
     default:
       return true;
+  }*/
+  switch (value) {
+    case Room.ONE:
+      return roomsOption[1].some((item) => item === selectedValue);
+    case Room.TWO:
+      return roomsOption[2].some((item) => item === selectedValue);
+    case Room.THREE:
+      return roomsOption[3].some((item) => item === selectedValue);
+    case Room.ONE_HUNDRED:
+      return roomsOption[100].some((item) => item === selectedValue);
+    default:
+      return true;
   }
 };
 
 const guestValidate = (value) => {
   const selectedValue = getSelectedValue(roomElement);
 
-  switch (value) {
+  /*switch (value) {
     case Guest.ONE:
       return selectedValue === Room.ONE ||
       selectedValue === Room.TWO ||
@@ -80,6 +98,18 @@ const guestValidate = (value) => {
       return selectedValue === Room.THREE;
     case Guest.ZERO:
       return selectedValue === Room.ONE_HUNDRED;
+    default:
+      return true;
+  }*/
+  switch (value) {
+    case Guest.ONE:
+      return roomsOption[3].some((item) => item === selectedValue);
+    case Guest.TWO:
+      return roomsOption[2].some((item) => item === selectedValue);
+    case Guest.THREE:
+      return roomsOption[1].some((item) => item === selectedValue);
+    case Guest.ONE_HUNDRED:
+      return roomsOption[100].some((item) => item === selectedValue);
     default:
       return true;
   }
