@@ -14,7 +14,6 @@ const IconPosition = {
   SIZE: [40, 40],
   ANCHOR: [20, 40]
 };
-
 const MARKER_COUNTS = 10;
 
 const map = L.map('map-canvas')
@@ -57,7 +56,8 @@ const mainMarker = L.marker(
     draggable: true,
     icon: mainPinIcon
   }
-)
+);
+mainMarker
   .addTo(map)
   .on('moveend', (evt) => {
     const {lat, lng} = evt.target.getLatLng();
@@ -82,7 +82,7 @@ const createMarker = (offer) => {
 };
 
 const addMarkers = (offers) => {
-  for (let i = 0; i < MARKER_COUNTS; i++) {
+  for (let i = 0; i < Math.min(MARKER_COUNTS, offers.length); i++) {
     createMarker(offers[i]);
   }
 };
@@ -94,4 +94,4 @@ const resetMarkers = () => {
 
 const clearMarkers = () => markerGroup.clearLayers();
 
-export {addMarkers, resetMarkers, clearMarkers};
+export {addMarkers, clearMarkers, resetMarkers};

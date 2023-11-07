@@ -3,13 +3,25 @@ import {setElementDisabled} from './utils.js';
 import {getSelectedValue} from './utils.js';
 
 const ANY_VOLUME = 'any';
-
+const Offer = {
+  TYPE: 'type',
+  PRICE: 'price',
+  ROOMS: 'rooms',
+  GUESTS: 'guests',
+  FEATURES: 'features'
+};
 const Price = {
   MIDDLE: 'middle',
   LOW: 'low',
   HIGH: 'high',
 };
-const features = [];
+const sortData = {
+  [Offer.TYPE]: null,
+  [Offer.PRICE]: null,
+  [Offer.ROOMS]: null,
+  [Offer.GUESTS]: null,
+  [Offer.FEATURES]: []
+};
 
 const filtersElement = document.querySelector('.map__filters');
 const filterElements = filtersElement.querySelectorAll('.map__filter');
@@ -32,14 +44,7 @@ const setFiltersInactive = () => {
 
 };
 
-const filterElementByType = (offers, type) => {
-  if (type === ANY_VOLUME) {
-    return offers;
-  }
-  return offers.filter((item) => item.offer.type === type);
-};
-
-const filterElementByPrice = (offers, price) => {
+/*const filterElementByPrice = (offers, price) => {
   switch (price) {
     case Price.MIDDLE:
       return offers.filter((item) => item.offer.price >= 10000 && item.offer.price <= 50000);
@@ -50,63 +55,119 @@ const filterElementByPrice = (offers, price) => {
     default:
       return offers;
   }
+};*/
+
+const resetSortData = () => {
+  sortData.type = null;
+  sortData.price = null;
+  sortData.rooms = null;
+  sortData.guest = null;
+  sortData.features = [];
 };
 
-const filterElementByRooms = (offers, roomCount) => {
-  if (roomCount === ANY_VOLUME) {
-    return offers;
+const checkPrice = (price, value) => {
+  switch (value) {
+    case Price.MIDDLE:
+      return price >= 10000 && price <= 50000;
+    case Price.LOW:
+      return price <= 10000;
+    case Price.HIGH:
+      return price >= 50000;
   }
-  return offers.filter((item) => item.offer.rooms === +roomCount);
 };
 
-const filterElementByGuests = (offers, guestCount) => {
-  if (guestCount === ANY_VOLUME) {
-    return offers;
+const checkFeatures = (offer) => sortData.features.every((feature) => {
+  if (offer.features) {
+    return offer.features.includes(feature);
   }
-  return offers.filter((item) => item.offer.guests === +guestCount);
+});
+
+const checkOffers = ({offer}) => {
+  const checked = [];
+  for (const key in sortData) {
+    switch (key) {
+      case Offer.TYPE:
+        if (sortData.type === ANY_VOLUME || sortData.type === null) {
+          checked.push(true);
+          break;
+        }
+        checked.push(sortData.type === offer.type);
+        break;
+      case Offer.PRICE:
+        if (sortData.price === ANY_VOLUME || sortData.price === null) {
+          checked.push(true);
+          break;
+        }
+        checked.push(checkPrice(offer.price, sortData.price));
+        break;
+      case Offer.ROOMS:
+        if (sortData.rooms === ANY_VOLUME || sortData.rooms === null) {
+          checked.push(true);
+          break;
+        }
+        checked.push(+sortData.rooms === offer.rooms);
+        break;
+      case Offer.GUESTS:
+        if (sortData.guests === ANY_VOLUME || sortData.guests === null) {
+          checked.push(true);
+          break;
+        }
+        checked.push(+sortData.guests === offer.guests);
+        break;
+      case Offer.FEATURES:
+        checked.push(checkFeatures(offer));
+        break;
+    }
+  }
+  return checked.every((item) => item);
 };
 
-const filterElementByFeatures = (offers, neededFeatures) => offers.filter((item) => neededFeatures.every((feature) => {
-  const verifiableFeatures = item.offer.features;
-  if (verifiableFeatures) {
-    return verifiableFeatures.includes(feature);
-  }
-}));
-
-const changeFilterHandler = (evt, offers, cb) => {
-  const type = getSelectedValue(evt.target);
-  //clearMarkers();
+const addFilteredOffers = (offers) => {
+  const filteredOffers = offers.filter((offer) => checkOffers(offer));
+  clearMarkers();
   resetMarkers();
-  addMarkers(cb(offers, type));
+  addMarkers(filteredOffers);
+  resetSortData();
 };
 
-const changeFeaturesHandler = (evt, offers) => {
+const addCheckedFeatures = (evt) => {
   const {checked, value} = evt.target;
 
   if (evt.target.closest('.map__checkbox')) {
-    if (checked && !features.includes(value)) {
-      features.push(value);
+    if (checked && !sortData.features.includes(value)) {
+      sortData.features.push(value);
     }
 
-    if (!checked && features.includes(value)) {
-      const index = features.findIndex((item) => value === item);
-      features.splice(index, 1);
+    if (!checked && sortData.features.includes(value)) {
+      const index = sortData.features.findIndex((item) => value === item);
+      sortData.features.splice(index, 1);
     }
-
-    //clearMarkers();
-    resetMarkers();
-    addMarkers(filterElementByFeatures(offers, features));
   }
 };
 
 const initFilters = (offers) => {
   setFiltersActive();
 
-  typeFilterElement.addEventListener('change', (evt) => changeFilterHandler(evt, offers, filterElementByType));
-  priceFilterElement.addEventListener('change', (evt) => changeFilterHandler(evt, offers, filterElementByPrice));
-  roomsFilterElement.addEventListener('change', (evt) => changeFilterHandler(evt, offers, filterElementByRooms));
-  guestsFilterElement.addEventListener('change', (evt) => changeFilterHandler(evt, offers, filterElementByGuests));
-  featuresFilterElement.addEventListener('change', (evt) => changeFeaturesHandler(evt, offers));
+  typeFilterElement.addEventListener('change', (evt) => {
+    sortData.type = getSelectedValue(evt.target);
+    addFilteredOffers(offers);
+  });
+  priceFilterElement.addEventListener('change', (evt) => {
+    sortData.price = getSelectedValue(evt.target);
+    addFilteredOffers(offers);
+  });
+  roomsFilterElement.addEventListener('change', (evt) => {
+    sortData.rooms = getSelectedValue(evt.target);
+    addFilteredOffers(offers);
+  });
+  guestsFilterElement.addEventListener('change', (evt) => {
+    sortData.guest = getSelectedValue(evt.target);
+    addFilteredOffers(offers);
+  });
+  featuresFilterElement.addEventListener('change', (evt) => {
+    addCheckedFeatures(evt);
+    addFilteredOffers(offers);
+  });
 };
 
 setFiltersInactive();

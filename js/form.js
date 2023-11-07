@@ -14,6 +14,8 @@ const Price = {
   max: 100000
 };
 const DECIMALS = 5;
+let avatar = '';
+let photo = '';
 
 const sliderElement = document.querySelector('.ad-form__slider');
 const headerElement = formElement.querySelector('.ad-form-header');
@@ -22,6 +24,10 @@ const timeInElement = formElement.querySelector('#timein');
 const timeOutElement = formElement.querySelector('#timeout');
 const addressElement = formElement.querySelector('#address');
 const submitElement = formElement.querySelector('.ad-form__submit');
+const avatarFieldElement = formElement.querySelector('.ad-form__field input');
+const avatarPreviewElement = formElement.querySelector('.ad-form-header__preview img');
+const photoFieldElement = formElement.querySelector('.ad-form__upload input');
+const photoPreviewElement = formElement.querySelector('.ad-form__photo');
 
 noUiSlider.create(sliderElement, {
   range: {
@@ -102,6 +108,8 @@ const submitFormHandler = async (evt) => {
     resetMarkers();
     sliderElement.noUiSlider.reset();
     formElement.reset();
+    URL.revokeObjectUR(avatar);
+    URL.revokeObjectUR(photo);
   } catch {
     showErrorMessage();
     setElementDisabled(submitElement, false);
@@ -114,11 +122,28 @@ const resetFormHandler = () => {
   sliderElement.noUiSlider.reset();
 };
 
+const changeAvatarHandler = (evt) => {
+  avatar = URL.createObjectURL(evt.target.files[0]);
+  avatarPreviewElement.src = avatar;
+};
+
+const changePhotoHandler = (evt) => {
+  photo = URL.createObjectURL(evt.target.files[0]);
+  const imageElement = document.createElement('img');
+  imageElement.src = photo;
+  imageElement.style.width = '70px';
+  imageElement.style.height = '70px';
+  imageElement.style.borderRadius = '5px';
+  photoPreviewElement.append(imageElement);
+};
+
 formElement.addEventListener('reset', resetFormHandler);
 formElement.addEventListener('submit', submitFormHandler);
 houseElement.addEventListener('change', changeHouseHandler);
 timeInElement.addEventListener('change', changeTimeInHandler);
 timeOutElement.addEventListener('change', changeTimeOutHandler);
+avatarFieldElement.addEventListener('change', changeAvatarHandler);
+photoFieldElement.addEventListener('change', changePhotoHandler);
 priceElement.addEventListener('input', (evt) => {
   sliderElement.noUiSlider.set(evt.target.value);
 });
