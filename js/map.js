@@ -1,5 +1,6 @@
 import {setFormActive, moveendAddressHandler} from './form.js';
 import {renderOffer} from './offers.js';
+import {debounce} from './utils.js';
 
 const MarkerLocation = {
   LAT: 35.68172,
@@ -16,13 +17,17 @@ const IconPosition = {
 };
 const MARKER_COUNTS = 10;
 
-const map = L.map('map-canvas')
-  .on('load', () => setFormActive())
-  .setView(
-    {
-      lat: MarkerLocation.LAT,
-      lng: MarkerLocation.LNG
-    }, 13);
+const map = L.map('map-canvas');
+
+const initMap = () => {
+  map
+    .on('load', () => setFormActive())
+    .setView(
+      {
+        lat: MarkerLocation.LAT,
+        lng: MarkerLocation.LNG
+      }, 13);
+};
 
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -87,11 +92,13 @@ const addMarkers = (offers) => {
   }
 };
 
+const debouncedAddMarkers = debounce(addMarkers);
+
 const resetMarkers = () => {
   mainMarker.setLatLng([MarkerLocation.LAT, MarkerLocation.LNG]);
   map.closePopup();
 };
 
-const clearMarkers = () => markerGroup.clearLayers();
+const clearLayers = () => markerGroup.clearLayers();
 
-export {addMarkers, clearMarkers, resetMarkers};
+export {initMap, addMarkers, clearLayers, resetMarkers, debouncedAddMarkers};

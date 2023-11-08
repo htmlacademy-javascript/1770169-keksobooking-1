@@ -1,8 +1,9 @@
-import {addMarkers, clearMarkers, resetMarkers} from './map.js';
-import {setElementDisabled} from './utils.js';
-import {getSelectedValue} from './utils.js';
+import {debouncedAddMarkers, clearLayers, resetMarkers, addMarkers} from './map.js';
+import {setElementDisabled, getSelectedValue} from './utils.js';
+import {getData} from './api.js';
+import {showAlert} from './message.js';
 
-const ANY_VOLUME = 'any';
+const DEFAULT_VOLUME = 'any';
 const Offer = {
   TYPE: 'type',
   PRICE: 'price',
@@ -16,10 +17,10 @@ const Price = {
   HIGH: 'high',
 };
 const sortData = {
-  [Offer.TYPE]: null,
-  [Offer.PRICE]: null,
-  [Offer.ROOMS]: null,
-  [Offer.GUESTS]: null,
+  [Offer.TYPE]: DEFAULT_VOLUME,
+  [Offer.PRICE]: DEFAULT_VOLUME,
+  [Offer.ROOMS]: DEFAULT_VOLUME,
+  [Offer.GUESTS]: DEFAULT_VOLUME,
   [Offer.FEATURES]: []
 };
 
@@ -44,25 +45,19 @@ const setFiltersInactive = () => {
 
 };
 
-/*const filterElementByPrice = (offers, price) => {
-  switch (price) {
-    case Price.MIDDLE:
-      return offers.filter((item) => item.offer.price >= 10000 && item.offer.price <= 50000);
-    case Price.LOW:
-      return offers.filter((item) => item.offer.price <= 10000);
-    case Price.HIGH:
-      return offers.filter((item) => item.offer.price >= 50000);
-    default:
-      return offers;
-  }
-};*/
-
-const resetSortData = () => {
-  sortData.type = null;
-  sortData.price = null;
-  sortData.rooms = null;
-  sortData.guest = null;
+const resetFilters = async () => {
+  filtersElement.reset();
+  sortData.type = DEFAULT_VOLUME;
+  sortData.price = DEFAULT_VOLUME;
+  sortData.rooms = DEFAULT_VOLUME;
+  sortData.guests = DEFAULT_VOLUME;
   sortData.features = [];
+  try {
+    const data = await getData();
+    addMarkers(data);
+  } catch {
+    showAlert();
+  }
 };
 
 const checkPrice = (price, value) => {
@@ -73,6 +68,8 @@ const checkPrice = (price, value) => {
       return price <= 10000;
     case Price.HIGH:
       return price >= 50000;
+    default:
+      return false;
   }
 };
 
@@ -83,51 +80,38 @@ const checkFeatures = (offer) => sortData.features.every((feature) => {
 });
 
 const checkOffers = ({offer}) => {
-  const checked = [];
+  const verifiedData = [];
+
   for (const key in sortData) {
+    if (sortData[key] === DEFAULT_VOLUME) {
+      continue;
+    }
     switch (key) {
       case Offer.TYPE:
-        if (sortData.type === ANY_VOLUME || sortData.type === null) {
-          checked.push(true);
-          break;
-        }
-        checked.push(sortData.type === offer.type);
+        verifiedData.push(sortData.type === offer.type);
         break;
       case Offer.PRICE:
-        if (sortData.price === ANY_VOLUME || sortData.price === null) {
-          checked.push(true);
-          break;
-        }
-        checked.push(checkPrice(offer.price, sortData.price));
+        verifiedData.push(checkPrice(offer.price, sortData.price));
         break;
       case Offer.ROOMS:
-        if (sortData.rooms === ANY_VOLUME || sortData.rooms === null) {
-          checked.push(true);
-          break;
-        }
-        checked.push(+sortData.rooms === offer.rooms);
+        verifiedData.push(+sortData.rooms === offer.rooms);
         break;
       case Offer.GUESTS:
-        if (sortData.guests === ANY_VOLUME || sortData.guests === null) {
-          checked.push(true);
-          break;
-        }
-        checked.push(+sortData.guests === offer.guests);
+        verifiedData.push(+sortData.guests === offer.guests);
         break;
       case Offer.FEATURES:
-        checked.push(checkFeatures(offer));
+        verifiedData.push(checkFeatures(offer));
         break;
     }
   }
-  return checked.every((item) => item);
+  return verifiedData.every((item) => item);
 };
 
 const addFilteredOffers = (offers) => {
   const filteredOffers = offers.filter((offer) => checkOffers(offer));
-  clearMarkers();
+  clearLayers();
   resetMarkers();
-  addMarkers(filteredOffers);
-  resetSortData();
+  debouncedAddMarkers(filteredOffers);
 };
 
 const addCheckedFeatures = (evt) => {
@@ -161,7 +145,7 @@ const initFilters = (offers) => {
     addFilteredOffers(offers);
   });
   guestsFilterElement.addEventListener('change', (evt) => {
-    sortData.guest = getSelectedValue(evt.target);
+    sortData.guests = getSelectedValue(evt.target);
     addFilteredOffers(offers);
   });
   featuresFilterElement.addEventListener('change', (evt) => {
@@ -172,4 +156,4 @@ const initFilters = (offers) => {
 
 setFiltersInactive();
 
-export {setFiltersInactive, initFilters};
+export {initFilters, resetFilters};

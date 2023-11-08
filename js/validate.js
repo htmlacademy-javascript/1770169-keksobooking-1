@@ -27,10 +27,16 @@ const Guest = {
   THREE: '3'
 };
 const roomsOption = {
-  '1': ['1'],
-  '2': ['2', '1'],
-  '3': ['3', '2', '1'],
-  '100': ['0'],
+  [Room.ONE]: ['1'],
+  [Room.TWO]: ['1', '2'],
+  [Room.THREE]: ['1', '2', '3'],
+  [Room.ONE_HUNDRED]: ['0'],
+};
+const guestsOption = {
+  [Guest.ZERO]: ['100'],
+  [Guest.ONE]: ['3'],
+  [Guest.TWO]: ['2', '3'],
+  [Guest.THREE]: ['1', '2', '3']
 };
 
 const titleElement = formElement.querySelector('#title');
@@ -52,64 +58,34 @@ const priceValidate = (value) => {
 const getPriceErrorMessage = () => `Для выбранного типа жилья минимальная цена ${Price[getSelectedValue(houseElement)]}, а максимальная ${Price.max} рублей.`;
 
 const roomValidate = (value) => {
-  const selectedValue = getSelectedValue(guestElement);
+  const guestValue = getSelectedValue(guestElement);
 
-  /*switch (value) {
-    case Room.ONE:
-      return selectedValue === Guest.ONE;
-    case Room.TWO:
-      return selectedValue === Guest.ONE ||
-      selectedValue === Guest.TWO;
-    case Room.THREE:
-      return selectedValue === Guest.ONE ||
-      selectedValue === Guest.TWO ||
-      selectedValue === Guest.THREE;
-    case Room.ONE_HUNDRED:
-      return selectedValue === Guest.ZERO;
-    default:
-      return true;
-  }*/
   switch (value) {
     case Room.ONE:
-      return roomsOption[1].some((item) => item === selectedValue);
+      return roomsOption[1].some((item) => item === guestValue);
     case Room.TWO:
-      return roomsOption[2].some((item) => item === selectedValue);
+      return roomsOption[2].some((item) => item === guestValue);
     case Room.THREE:
-      return roomsOption[3].some((item) => item === selectedValue);
+      return roomsOption[3].some((item) => item === guestValue);
     case Room.ONE_HUNDRED:
-      return roomsOption[100].some((item) => item === selectedValue);
+      return roomsOption[100].some((item) => item === guestValue);
     default:
       return true;
   }
 };
 
 const guestValidate = (value) => {
-  const selectedValue = getSelectedValue(roomElement);
+  const roomValue = getSelectedValue(roomElement);
 
-  /*switch (value) {
-    case Guest.ONE:
-      return selectedValue === Room.ONE ||
-      selectedValue === Room.TWO ||
-      selectedValue === Room.THREE;
-    case Guest.TWO:
-      return selectedValue === Room.TWO ||
-      selectedValue === Room.THREE;
-    case Guest.THREE:
-      return selectedValue === Room.THREE;
-    case Guest.ZERO:
-      return selectedValue === Room.ONE_HUNDRED;
-    default:
-      return true;
-  }*/
   switch (value) {
     case Guest.ONE:
-      return roomsOption[3].some((item) => item === selectedValue);
+      return guestsOption[3].some((item) => item === roomValue);
     case Guest.TWO:
-      return roomsOption[2].some((item) => item === selectedValue);
+      return guestsOption[2].some((item) => item === roomValue);
     case Guest.THREE:
-      return roomsOption[1].some((item) => item === selectedValue);
-    case Guest.ONE_HUNDRED:
-      return roomsOption[100].some((item) => item === selectedValue);
+      return guestsOption[1].some((item) => item === roomValue);
+    case Guest.ZERO:
+      return guestsOption[0].some((item) => item === roomValue);
     default:
       return true;
   }

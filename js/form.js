@@ -1,9 +1,10 @@
-import {sendData} from './api.js';
+import {getData, sendData} from './api.js';
 import {formElement, houseElement, priceElement} from './elements.js';
-import {resetMarkers} from './map.js';
-import {showErrorMessage, showSuccessMessage} from './message.js';
+import {addMarkers, resetMarkers} from './map.js';
+import {showErrorMessage, showSuccessMessage, showAlert} from './message.js';
 import {setElementDisabled, getSelectedValue} from './utils.js';
 import {checkFormValidity, resetPristine, getErrors} from './validate.js';
+import {initFilters, resetFilters} from './filters.js';
 
 const Price = {
   flat: 1000,
@@ -59,10 +60,18 @@ const changeTimeOutHandler = (evt) => (timeInElement.value = evt.target.value);
 
 const moveendAddressHandler = (lat, lng) => (addressElement.value = `${(lat).toFixed(DECIMALS)}, ${(lng).toFixed(DECIMALS)}`);
 
-const setFormActive = () => {
+const setFormActive = async () => {
   formElement.classList.remove('ad-form--disabled');
   setElementDisabled(headerElement, false);
   groupElements.forEach((element) => setElementDisabled(element, false));
+
+  try {
+    const data = await getData();
+    addMarkers(data);
+    initFilters(data);
+  } catch (error) {
+    showAlert(error);
+  }
 };
 
 const setFormInactive = () => {
@@ -89,6 +98,16 @@ const removeErrors = () => {
   groupElements.forEach((element) => element.classList.remove('ad-form__element--invalid'));
 };
 
+const resetUploadImage = () => {
+  const photoElement = photoPreviewElement.querySelector('img');
+  if (photoElement) {
+    photoElement.remove();
+  }
+  avatarPreviewElement.src = 'img/muffin-grey.svg';
+  URL.revokeObjectURL(avatar);
+  URL.revokeObjectURL(photo);
+};
+
 const submitFormHandler = async (evt) => {
   evt.preventDefault();
   removeErrors();
@@ -105,11 +124,11 @@ const submitFormHandler = async (evt) => {
     await sendData(formData);
     showSuccessMessage();
     setElementDisabled(submitElement, false);
+    formElement.reset();
+    resetFilters();
     resetMarkers();
     sliderElement.noUiSlider.reset();
-    formElement.reset();
-    URL.revokeObjectUR(avatar);
-    URL.revokeObjectUR(photo);
+    resetUploadImage();
   } catch {
     showErrorMessage();
     setElementDisabled(submitElement, false);
@@ -118,8 +137,10 @@ const submitFormHandler = async (evt) => {
 
 const resetFormHandler = () => {
   formElement.reset();
+  resetFilters();
   resetMarkers();
   sliderElement.noUiSlider.reset();
+  resetUploadImage();
 };
 
 const changeAvatarHandler = (evt) => {
@@ -131,8 +152,8 @@ const changePhotoHandler = (evt) => {
   photo = URL.createObjectURL(evt.target.files[0]);
   const imageElement = document.createElement('img');
   imageElement.src = photo;
-  imageElement.style.width = '70px';
-  imageElement.style.height = '70px';
+  imageElement.width = '70';
+  imageElement.height = '70';
   imageElement.style.borderRadius = '5px';
   photoPreviewElement.append(imageElement);
 };
