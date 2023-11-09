@@ -3,7 +3,8 @@ import {setElementDisabled, getSelectedValue} from './utils.js';
 import {getData} from './api.js';
 import {showAlert} from './message.js';
 
-const DEFAULT_VOLUME = 'any';
+const MAX_LENGTH = 10;
+const DEFAULT_VALUE = 'any';
 const Offer = {
   TYPE: 'type',
   PRICE: 'price',
@@ -16,21 +17,31 @@ const Price = {
   LOW: 'low',
   HIGH: 'high',
 };
+const PricesRange = {
+  low: {
+    MIN: 0,
+    MAX: 10000,
+  },
+  middle: {
+    MIN: 10000,
+    MAX: 50000,
+  },
+  high: {
+    MIN: 50000,
+    MAX: 100000,
+  },
+};
 const sortData = {
-  [Offer.TYPE]: DEFAULT_VOLUME,
-  [Offer.PRICE]: DEFAULT_VOLUME,
-  [Offer.ROOMS]: DEFAULT_VOLUME,
-  [Offer.GUESTS]: DEFAULT_VOLUME,
+  [Offer.TYPE]: DEFAULT_VALUE,
+  [Offer.PRICE]: DEFAULT_VALUE,
+  [Offer.ROOMS]: DEFAULT_VALUE,
+  [Offer.GUESTS]: DEFAULT_VALUE,
   [Offer.FEATURES]: []
 };
 
 const filtersElement = document.querySelector('.map__filters');
 const filterElements = filtersElement.querySelectorAll('.map__filter');
-const typeFilterElement = filtersElement.querySelector('#housing-type');
-const priceFilterElement = filtersElement.querySelector('#housing-price');
-const roomsFilterElement = filtersElement.querySelector('#housing-rooms');
-const guestsFilterElement = filtersElement.querySelector('#housing-guests');
-const featuresFilterElement = filtersElement.querySelector('#housing-features');
+const featuresFilterElement = filtersElement.querySelector('.map__features');
 
 const setFiltersActive = () => {
   filtersElement.classList.remove('map__filters--disabled');
@@ -42,32 +53,31 @@ const setFiltersInactive = () => {
   filtersElement.classList.add('map__filters--disabled');
   filterElements.forEach((element) => setElementDisabled(element, true));
   setElementDisabled(featuresFilterElement, true);
-
 };
 
 const resetFilters = async () => {
   filtersElement.reset();
-  sortData.type = DEFAULT_VOLUME;
-  sortData.price = DEFAULT_VOLUME;
-  sortData.rooms = DEFAULT_VOLUME;
-  sortData.guests = DEFAULT_VOLUME;
+  sortData.type = DEFAULT_VALUE;
+  sortData.price = DEFAULT_VALUE;
+  sortData.rooms = DEFAULT_VALUE;
+  sortData.guests = DEFAULT_VALUE;
   sortData.features = [];
   try {
     const data = await getData();
     addMarkers(data);
-  } catch {
-    showAlert();
+  } catch (error) {
+    showAlert(error);
   }
 };
 
 const checkPrice = (price, value) => {
   switch (value) {
     case Price.MIDDLE:
-      return price >= 10000 && price <= 50000;
+      return price >= PricesRange.middle.MIN && price <= PricesRange.middle.MAX;
     case Price.LOW:
-      return price <= 10000;
+      return price <= PricesRange.low.MIN;
     case Price.HIGH:
-      return price >= 50000;
+      return price >= PricesRange.high.MAX;
     default:
       return false;
   }
@@ -80,35 +90,48 @@ const checkFeatures = (offer) => sortData.features.every((feature) => {
 });
 
 const checkOffers = ({offer}) => {
-  const verifiedData = [];
+  let isVerified = true;
 
   for (const key in sortData) {
-    if (sortData[key] === DEFAULT_VOLUME) {
-      continue;
-    }
-    switch (key) {
-      case Offer.TYPE:
-        verifiedData.push(sortData.type === offer.type);
-        break;
-      case Offer.PRICE:
-        verifiedData.push(checkPrice(offer.price, sortData.price));
-        break;
-      case Offer.ROOMS:
-        verifiedData.push(+sortData.rooms === offer.rooms);
-        break;
-      case Offer.GUESTS:
-        verifiedData.push(+sortData.guests === offer.guests);
-        break;
-      case Offer.FEATURES:
-        verifiedData.push(checkFeatures(offer));
-        break;
+    if (isVerified) {
+      if (sortData[key] === DEFAULT_VALUE) {
+        continue;
+      }
+      switch (key) {
+        case Offer.TYPE:
+          isVerified = sortData.type === offer.type;
+          break;
+        case Offer.PRICE:
+          isVerified = checkPrice(offer.price, sortData.price);
+          break;
+        case Offer.ROOMS:
+          isVerified = +sortData.rooms === offer.rooms;
+          break;
+        case Offer.GUESTS:
+          isVerified = +sortData.guests === offer.guests;
+          break;
+        case Offer.FEATURES:
+          isVerified = checkFeatures(offer);
+          break;
+      }
     }
   }
-  return verifiedData.every((item) => item);
+
+  return isVerified;
 };
 
 const addFilteredOffers = (offers) => {
-  const filteredOffers = offers.filter((offer) => checkOffers(offer));
+  const filteredOffers = [];
+
+  for (const offer of offers) {
+    if (filteredOffers.length === MAX_LENGTH) {
+      return;
+    }
+    if (checkOffers(offer)) {
+      filteredOffers.push(offer);
+    }
+  }
+
   clearLayers();
   resetMarkers();
   debouncedAddMarkers(filteredOffers);
@@ -132,24 +155,14 @@ const addCheckedFeatures = (evt) => {
 const initFilters = (offers) => {
   setFiltersActive();
 
-  typeFilterElement.addEventListener('change', (evt) => {
-    sortData.type = getSelectedValue(evt.target);
-    addFilteredOffers(offers);
-  });
-  priceFilterElement.addEventListener('change', (evt) => {
-    sortData.price = getSelectedValue(evt.target);
-    addFilteredOffers(offers);
-  });
-  roomsFilterElement.addEventListener('change', (evt) => {
-    sortData.rooms = getSelectedValue(evt.target);
-    addFilteredOffers(offers);
-  });
-  guestsFilterElement.addEventListener('change', (evt) => {
-    sortData.guests = getSelectedValue(evt.target);
-    addFilteredOffers(offers);
-  });
-  featuresFilterElement.addEventListener('change', (evt) => {
-    addCheckedFeatures(evt);
+  filtersElement.addEventListener('change', (evt) => {
+    const target = evt.target;
+
+    if (target.closest('.map__features')) {
+      addCheckedFeatures(evt);
+    } else {
+      sortData[target.dataset.type] = getSelectedValue(target);
+    }
     addFilteredOffers(offers);
   });
 };
