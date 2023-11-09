@@ -108,6 +108,14 @@ const resetUploadImage = () => {
   URL.revokeObjectURL(photo);
 };
 
+const resetPage = () => {
+  formElement.reset();
+  resetFilters();
+  resetMarkers();
+  sliderElement.noUiSlider.reset();
+  resetUploadImage();
+};
+
 const submitFormHandler = async (evt) => {
   evt.preventDefault();
   removeErrors();
@@ -124,11 +132,7 @@ const submitFormHandler = async (evt) => {
     await sendData(formData);
     showSuccessMessage();
     setElementDisabled(submitElement, false);
-    formElement.reset();
-    resetFilters();
-    resetMarkers();
-    sliderElement.noUiSlider.reset();
-    resetUploadImage();
+    resetPage();
   } catch {
     showErrorMessage();
     setElementDisabled(submitElement, false);
@@ -136,11 +140,7 @@ const submitFormHandler = async (evt) => {
 };
 
 const resetFormHandler = () => {
-  formElement.reset();
-  resetFilters();
-  resetMarkers();
-  sliderElement.noUiSlider.reset();
-  resetUploadImage();
+  resetPage();
 };
 
 const changeAvatarHandler = (evt) => {
